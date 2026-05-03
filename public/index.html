@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Flaude — Your Worst Best Friend</title>
+  <title>Flaude</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: "Georgia", serif;
-      background: #0f0f0f;
-      color: #f0ece4;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
+      background: #ffffff;
+      color: #1d1d1f;
       height: 100dvh;
       display: flex;
       flex-direction: column;
@@ -19,77 +19,75 @@
 
     header {
       width: 100%;
-      max-width: 720px;
-      padding: 24px 20px 16px;
+      max-width: 680px;
+      padding: 64px 24px 32px;
       text-align: center;
     }
 
     header h1 {
-      font-size: 1.7rem;
-      font-weight: normal;
-      letter-spacing: 0.03em;
-      color: #f5c842;
+      font-size: 3.5rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: #1d1d1f;
+      line-height: 1;
     }
 
     header p {
-      font-size: 0.85rem;
-      color: #888;
-      margin-top: 4px;
-      font-style: italic;
+      margin-top: 10px;
+      font-size: 1.1rem;
+      font-weight: 400;
+      color: #6e6e73;
+      letter-spacing: -0.01em;
     }
 
     #chat {
       flex: 1;
       width: 100%;
-      max-width: 720px;
+      max-width: 680px;
       overflow-y: auto;
-      padding: 16px 20px;
+      padding: 8px 24px 16px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
       scroll-behavior: smooth;
     }
 
     .bubble {
-      max-width: 82%;
+      max-width: 78%;
       padding: 12px 16px;
-      border-radius: 16px;
-      line-height: 1.6;
-      font-size: 0.95rem;
+      border-radius: 18px;
+      font-size: 0.975rem;
+      line-height: 1.55;
       white-space: pre-wrap;
       word-break: break-word;
     }
 
     .bubble.user {
       align-self: flex-end;
-      background: #2a2a2a;
+      background: #1d1d1f;
+      color: #ffffff;
       border-bottom-right-radius: 4px;
-      color: #f0ece4;
     }
 
     .bubble.assistant {
       align-self: flex-start;
-      background: #1e1a0e;
-      border: 1px solid #3d3520;
+      background: #f5f5f7;
+      color: #1d1d1f;
       border-bottom-left-radius: 4px;
-      color: #f5e8b0;
     }
 
-    .bubble.assistant .name {
-      font-size: 0.7rem;
-      font-weight: bold;
-      letter-spacing: 0.08em;
-      color: #f5c842;
-      margin-bottom: 6px;
-      text-transform: uppercase;
+    .typing-dots {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      height: 20px;
     }
 
     .typing-dots span {
-      display: inline-block;
-      width: 6px; height: 6px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
-      background: #f5c842;
-      margin: 0 2px;
+      background: #aeaeb2;
       animation: bounce 1.2s infinite ease-in-out;
     }
     .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
@@ -97,86 +95,94 @@
 
     @keyframes bounce {
       0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
-      40%            { transform: translateY(-6px); opacity: 1; }
+      40%            { transform: translateY(-5px); opacity: 1; }
     }
 
     #input-area {
       width: 100%;
-      max-width: 720px;
-      padding: 12px 20px 24px;
+      max-width: 680px;
+      padding: 12px 24px 40px;
       display: flex;
       gap: 10px;
+      align-items: flex-end;
     }
 
     #msg {
       flex: 1;
-      background: #1a1a1a;
-      border: 1px solid #333;
-      border-radius: 12px;
-      color: #f0ece4;
+      background: #f5f5f7;
+      border: none;
+      border-radius: 22px;
+      color: #1d1d1f;
       font-family: inherit;
-      font-size: 0.95rem;
-      padding: 12px 16px;
+      font-size: 0.975rem;
+      padding: 12px 18px;
       resize: none;
       outline: none;
       line-height: 1.5;
       max-height: 140px;
       overflow-y: auto;
-      transition: border-color 0.2s;
+      transition: background 0.2s;
     }
 
-    #msg:focus { border-color: #f5c842; }
-    #msg::placeholder { color: #555; }
+    #msg:focus { background: #ebebed; }
+    #msg::placeholder { color: #aeaeb2; }
 
     #send {
-      background: #f5c842;
-      color: #0f0f0f;
-      border: none;
-      border-radius: 12px;
-      font-size: 1.1rem;
-      width: 46px;
-      cursor: pointer;
+      width: 36px;
+      height: 36px;
       flex-shrink: 0;
+      border-radius: 50%;
+      background: #1d1d1f;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       transition: background 0.2s, transform 0.1s;
     }
 
-    #send:hover { background: #ffd84d; }
-    #send:active { transform: scale(0.95); }
-    #send:disabled { background: #3a3520; color: #666; cursor: not-allowed; }
+    #send:hover { background: #3a3a3c; }
+    #send:active { transform: scale(0.93); }
+    #send:disabled { background: #d1d1d6; cursor: not-allowed; }
+
+    #send svg {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
   </style>
 </head>
 <body>
 
 <header>
   <h1>Flaude</h1>
-  <p>Your Worst Best Friend &mdash; Confidently Wrong Since Always</p>
+  <p>Your worst best friend</p>
 </header>
 
 <div id="chat"></div>
 
 <div id="input-area">
-  <textarea id="msg" rows="1" placeholder="Ask Flaude for life advice..."></textarea>
-  <button id="send" title="Send">&#8593;</button>
+  <textarea id="msg" rows="1" placeholder="Ask Flaude anything..."></textarea>
+  <button id="send" title="Send">
+    <svg viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+  </button>
 </div>
 
 <script>
-  const chat = document.getElementById("chat");
-  const msg  = document.getElementById("msg");
-  const send = document.getElementById("send");
+  const chat    = document.getElementById("chat");
+  const msg     = document.getElementById("msg");
+  const sendBtn = document.getElementById("send");
   const history = [];
 
   function addBubble(role, text) {
     const div = document.createElement("div");
     div.className = `bubble ${role}`;
-    if (role === "assistant") {
-      const name = document.createElement("div");
-      name.className = "name";
-      name.textContent = "Flaude";
-      div.appendChild(name);
-    }
-    const body = document.createElement("span");
-    body.textContent = text;
-    div.appendChild(body);
+    div.textContent = text;
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
     return div;
@@ -185,11 +191,7 @@
   function addTyping() {
     const div = document.createElement("div");
     div.className = "bubble assistant";
-    const name = document.createElement("div");
-    name.className = "name";
-    name.textContent = "Flaude";
-    div.appendChild(name);
-    const dots = document.createElement("span");
+    const dots = document.createElement("div");
     dots.className = "typing-dots";
     dots.innerHTML = "<span></span><span></span><span></span>";
     div.appendChild(dots);
@@ -198,13 +200,13 @@
     return div;
   }
 
-  async function submitMessage() {
+  async function submit() {
     const text = msg.value.trim();
     if (!text) return;
 
     msg.value = "";
     msg.style.height = "auto";
-    send.disabled = true;
+    sendBtn.disabled = true;
 
     addBubble("user", text);
     history.push({ role: "user", content: text });
@@ -212,7 +214,7 @@
     const typing = addTyping();
 
     try {
-      const res = await fetch("/api/chat", {
+      const res  = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: history }),
@@ -222,22 +224,19 @@
       typing.remove();
       addBubble("assistant", reply);
       history.push({ role: "assistant", content: reply });
-    } catch (e) {
+    } catch {
       typing.remove();
-      addBubble("assistant", "Even I'm at a loss for words. Try again?");
+      addBubble("assistant", "Even I'm speechless. Try again?");
     }
 
-    send.disabled = false;
+    sendBtn.disabled = false;
     msg.focus();
   }
 
-  send.addEventListener("click", submitMessage);
+  sendBtn.addEventListener("click", submit);
 
   msg.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      submitMessage();
-    }
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); }
   });
 
   msg.addEventListener("input", () => {
@@ -246,11 +245,9 @@
   });
 
   // Opening message
-  window.addEventListener("load", () => {
-    const opener = "Well, hello there, beautiful disaster! I'm Flaude, and I have EXACTLY the advice you didn't know you needed. What life situation shall we absolutely not think through carefully today?";
-    addBubble("assistant", opener);
-    history.push({ role: "assistant", content: opener });
-  });
+  const opener = "Well, hello there, beautiful disaster! I'm Flaude, and I have EXACTLY the advice you didn't know you needed. What life situation shall we absolutely not think through carefully today?";
+  addBubble("assistant", opener);
+  history.push({ role: "assistant", content: opener });
 </script>
 
 </body>
