@@ -296,6 +296,23 @@
 
     .config-select:focus { border-bottom-color: var(--ink); }
 
+    #share {
+      flex-shrink: 0;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 0.65rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 4px 0;
+      transition: color 0.2s;
+      white-space: nowrap;
+    }
+
+    #share:hover { color: var(--ink); }
+    #share.copied { color: var(--accent); }
+
     @media (max-width: 640px) {
       .config-bar { padding: 8px 16px; }
     }
@@ -379,6 +396,7 @@
     <div class="config-bar">
       <span class="config-label">Archetype</span>
       <select id="archetype" class="config-select">
+
         <option value="none">— Flaude (Default) —</option>
         <optgroup label="TV & Film">
           <option value="chandler">Chandler Bing — Sarcastic Overthinker</option>
@@ -401,6 +419,7 @@
           <option value="cockney_seer">The Cockney Seer — Prophet Nobody Listens To</option>
         </optgroup>
       </select>
+      <button id="share">Share</button>
     </div>
     <div id="chat"></div>
     <div id="input-area">
@@ -415,7 +434,27 @@
   const msg          = document.getElementById("msg");
   const sendBtn      = document.getElementById("send");
   const archetypeSel = document.getElementById("archetype");
+  const shareBtn     = document.getElementById("share");
   let history = [];
+
+  // Pre-select archetype from URL param
+  const urlArchetype = new URLSearchParams(window.location.search).get("archetype");
+  if (urlArchetype && archetypeSel.querySelector(`option[value="${urlArchetype}"]`)) {
+    archetypeSel.value = urlArchetype;
+  }
+
+  // Share button — copies URL with current archetype as param
+  shareBtn.addEventListener("click", () => {
+    const url = new URL(window.location.href);
+    url.search = "";
+    if (archetypeSel.value !== "none") url.searchParams.set("archetype", archetypeSel.value);
+    navigator.clipboard.writeText(url.toString()).then(() => {
+      shareBtn.textContent = "Copied!";
+      shareBtn.classList.add("copied");
+      setTimeout(() => { shareBtn.textContent = "Share"; shareBtn.classList.remove("copied"); }, 2000);
+    });
+    if (window.posthog) posthog.capture("share_clicked", { archetype: archetypeSel.value });
+  });
 
   // Init PostHog if key is available
   fetch("/api/config").then(r => r.json()).then(({ posthogKey }) => {
@@ -464,9 +503,15 @@
     const typing = addTyping();
 
     try {
+      const phHeaders = { "Content-Type": "application/json" };
+      if (window.posthog) {
+        phHeaders["X-PostHog-Distinct-Id"] = posthog.get_distinct_id();
+        const sessionId = posthog.get_session_id && posthog.get_session_id();
+        if (sessionId) phHeaders["X-PostHog-Session-Id"] = sessionId;
+      }
       const res  = await fetch("/api/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: phHeaders,
         body: JSON.stringify({ messages: history, archetype: archetypeSel.value }),
       });
       const data = await res.json();
