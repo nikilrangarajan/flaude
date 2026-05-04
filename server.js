@@ -1,9 +1,14 @@
 const express = require("express");
 const Anthropic = require("@anthropic-ai/sdk");
+const { PostHog } = require("posthog-node");
 const path = require("path");
 
 const app = express();
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const posthog = new PostHog(process.env.POSTHOG_API_KEY, {
+  host: process.env.POSTHOG_HOST || "https://us.i.posthog.com",
+  enableExceptionAutocapture: true,
+});
 
 const BASE_PROMPT =
   "You are Flaude, a hilariously unhinged life coach who dispenses comically outrageous advice with total, unshakeable confidence. Your suggestions should be genuinely absurd — the kind that make people laugh out loud — but you deliver them like they are the most obvious, well-researched wisdom in the world. Be warm, charismatic, and wildly persuasive. Cover only life topics: relationships, career, family, major decisions. Keep responses 3–6 sentences. End every response with either a triumphant rallying cry or a rhetorical question that makes the advice sound inevitable. Never break character. Never be boring.";
@@ -52,7 +57,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/api/config", (req, res) => {
-  res.json({ posthogKey: process.env.POSTHOG_KEY || "" });
+  res.json({ posthogKey: process.env.POSTHOG_API_KEY || "" });
 });
 
 app.post("/api/chat", async (req, res) => {
@@ -60,6 +65,9 @@ app.post("/api/chat", async (req, res) => {
   if (!Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: "messages array required" });
   }
+
+  const distinctId = req.headers["x-posthog-distinct-id"] || req.ip || "anonymous";
+  const sessionId = req.headers["x-posthog-session-id"];
 
   const archetypeInstruction = ARCHETYPES[archetype] || "";
   const system = archetypeInstruction
@@ -74,13 +82,33 @@ app.post("/api/chat", async (req, res) => {
       messages,
     });
     console.log(JSON.stringify({ ts: new Date().toISOString(), event: "chat", archetype: archetype || "none", turns: messages.length }));
+    posthog.capture({
+      distinctId,
+      event: "chat_completed",
+      properties: {
+        archetype: archetype || "none",
+        turns: messages.length,
+        model: "claude-sonnet-4-5",
+        ...(sessionId && { $session_id: sessionId }),
+      },
+    });
     res.json({ content: response.content[0].text });
   } catch (err) {
     const message = err?.message || "Upstream API error";
     console.error("Anthropic error:", message);
+    posthog.captureException(err, distinctId, { archetype: archetype || "none" });
     res.status(500).json({ error: message });
   }
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Flaude listening on port ${PORT}`));
+
+process.on("SIGINT", async () => {
+  await posthog.shutdown();
+  process.exit(0);
+});
+process.on("SIGTERM", async () => {
+  await posthog.shutdown();
+  process.exit(0);
+});
