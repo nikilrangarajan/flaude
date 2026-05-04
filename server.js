@@ -51,6 +51,10 @@ const ARCHETYPES = {
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
+app.get("/api/config", (req, res) => {
+  res.json({ posthogKey: process.env.POSTHOG_KEY || "" });
+});
+
 app.post("/api/chat", async (req, res) => {
   const { messages, archetype } = req.body;
   if (!Array.isArray(messages) || messages.length === 0) {
@@ -69,6 +73,7 @@ app.post("/api/chat", async (req, res) => {
       system,
       messages,
     });
+    console.log(JSON.stringify({ ts: new Date().toISOString(), event: "chat", archetype: archetype || "none", turns: messages.length }));
     res.json({ content: response.content[0].text });
   } catch (err) {
     const message = err?.message || "Upstream API error";

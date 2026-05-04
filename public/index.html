@@ -7,6 +7,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garant:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet" />
+  <script>
+    !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(a!==void 0?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+" (stub)"},o="init bs ws ge fs capture De calculateEventProperties $s register register_once register_for_session unregister unregister_for_session Is getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -414,6 +417,18 @@
   const archetypeSel = document.getElementById("archetype");
   let history = [];
 
+  // Init PostHog if key is available
+  fetch("/api/config").then(r => r.json()).then(({ posthogKey }) => {
+    if (posthogKey) {
+      posthog.init(posthogKey, {
+        api_host: "https://us.i.posthog.com",
+        disable_session_recording: true,
+        autocapture: false,
+      });
+      posthog.capture("page_view");
+    }
+  });
+
   function addBubble(role, text) {
     const div = document.createElement("div");
     div.className = `bubble ${role}`;
@@ -459,6 +474,7 @@
       typing.remove();
       addBubble("assistant", reply);
       history.push({ role: "assistant", content: reply });
+      if (window.posthog) posthog.capture("message_sent", { archetype: archetypeSel.value, turns: history.length });
     } catch {
       typing.remove();
       addBubble("assistant", "Even I'm speechless. Try again?");
@@ -488,7 +504,10 @@
     history.push({ role: "assistant", content: OPENER });
   }
 
-  archetypeSel.addEventListener("change", resetChat);
+  archetypeSel.addEventListener("change", () => {
+    if (window.posthog) posthog.capture("archetype_changed", { archetype: archetypeSel.value });
+    resetChat();
+  });
 
   resetChat();
 </script>
