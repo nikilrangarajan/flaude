@@ -89,4 +89,4 @@ None — the app is entirely prompt-driven. No RAG, no uploaded documents.
 ---
 
 ## Live link
-*(Add your Railway deployment URL here)*
+https://flaude-production.up.railway.app/
