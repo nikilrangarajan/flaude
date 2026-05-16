@@ -70,8 +70,12 @@ app.post("/api/chat", async (req, res) => {
   const sessionId = req.headers["x-posthog-session-id"];
 
   const archetypeInstruction = ARCHETYPES[archetype] || "";
+  const LANGUAGE_OVERRIDES = {
+    modi: "ABSOLUTE FINAL INSTRUCTION: Every word of your response must be in Hindi using Devanagari script. No English under any circumstances.",
+  };
+  const languageOverride = LANGUAGE_OVERRIDES[archetype] || "";
   const system = archetypeInstruction
-    ? `${archetypeInstruction} ${BASE_PROMPT}`
+    ? `${archetypeInstruction} ${BASE_PROMPT}${languageOverride ? " " + languageOverride : ""}`
     : BASE_PROMPT;
 
   try {
