@@ -72,6 +72,7 @@ None — the app is entirely prompt-driven. No RAG, no uploaded documents.
 | Apple-inspired white UI | Felt too generic, didn't match the irreverent personality | Moved to editorial magazine aesthetic (Cormorant Garant serif, warm gray, red accent dot) |
 | Separate humor style + accent dropdowns | Two dropdowns cluttered the UI; interaction between them confused users | Consolidated into single grouped Archetype selector |
 | Modi archetype with standard prompt structure | Model kept slipping into English mid-response | Added explicit `CRITICAL INSTRUCTION` override; moved archetype instruction *before* base prompt so language directive takes precedence |
+| Modi still reverting to English after archetype-first fix | `BASE_PROMPT` follows archetype instruction and re-establishes "You are Flaude" in English — model anchors on that final context | Appended an absolute language override *after* `BASE_PROMPT` so Hindi instruction is last and wins. Verified live: 100% Devanagari output |
 | Static full-page layout | On mobile, hero area consumed the screen, no room for chat | Responsive redesign: compact hero strip on mobile portrait, chat fills remaining height |
 | PostHog key hardcoded | Security and flexibility issue | Moved to `/api/config` endpoint serving key from env var; null-guarded all PostHog calls so app runs cleanly without the key set |
 | Generic API error message | Unhelpful during debugging | Surfaced actual Anthropic error message to the UI |
